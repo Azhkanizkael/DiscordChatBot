@@ -1,0 +1,11 @@
+{
+    "twitch": {
+        "account":"twitch bot name",
+        "token":"oauth:password"
+    },
+    "discord": {
+        "account":"DiscordAccountName#0000",
+        "token":"ARealTokenGoesHere",
+        "prefix":"!"
+    }
+}
