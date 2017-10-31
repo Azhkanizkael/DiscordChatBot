@@ -3,14 +3,9 @@
 Dependencies:
 
 npm i discord.js
-
 npm i enmap
-
 npm i enmap-levels
-
 npm i tmi.js
-
-
 
 Setup:
 
