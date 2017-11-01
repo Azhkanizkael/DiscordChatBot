@@ -1,4 +1,4 @@
-//Initiation
+//Initialization
 const tmi = require("tmi.js");
 const config = require("./config")
 const fs = require("fs");
@@ -9,38 +9,46 @@ const bot = new Discord.Client();
 
 //Settings Database
 const settings = new Enmap({ provider: new EnmapLevel({ name: 'settings' }) });
-settings.defer.then(() => {
-    console.log(settings.size + " keys loaded");
-    const settingsid = 'channels'
-    try{
-        var dchan = settings.get(settingsid).discord
-        var tchan = settings.get(settingsid).twitch
+bot.on("guildCreate", guild => {
+    settings.set(guild.id, guild.id);
+});
+bot.on("guildDelete", guild => {
+    settings.delete(guild.id);
+});
+bot.on("guildMemberAdd", member => {
+    const guildConf = settings.get(member.guild.id);
+});
+//Bot Commands
+bot.on('ready', () => {
+    console.log('Battlecruiser Operational!');
+    console.log('Prefix set to: ' + config.discord.prefix);
+    bot.guilds.forEach(guild => {
+        var dchan = settings.get(guild.id).discord
+        var tchan = settings.get(guild.id).twitch
         console.log('using: ' + tchan + ' ' + dchan)
         ConnectionStart(tchan,dchan)
+    });
+  });
+bot.on('message', async (message) => {
+    if (!message.guild || message.author.bot) return;
+    if (message.content.indexOf(config.discord.prefix) !== 0) return;
+    const args = message.content.slice(config.discord.prefix.length).trim().split(/ +/g);
+    const command = args.shift().toLowerCase();
+    try{
+        var dchan = settings.get(message.guild.id).discord
+        var tchan = settings.get(message.guild.id).twitch
+        console.log('using: ' + tchan + ' ' + dchan)
     } catch(err) {
         var dchan
         var tchan
         console.log('using: ' + tchan + ' ' + dchan)
     }
-});
 
-//Bot Commands
-bot.on('ready', () => {
-    console.log('Battlecruiser Operational!');
-    console.log('Prefix set to: ' + config.discord.prefix);
-  });
-  
-bot.on('message', message => {
-    if (message.author.bot) return;
-    if (message.content.indexOf(config.discord.prefix) !== 0) return;
-    const args = message.content.slice(config.discord.prefix.length).trim().split(/ +/g);
-    const command = args.shift().toLowerCase();
-  
     switch(command) {
         case "channels" :
-            settings.set(settingsid,{twitch: args[0],discord: args[1]});
-            var tchan = settings.get(settingsid).twitch
-            var dchan = settings.get(settingsid).discord
+            settings.set(message.guild.id,{twitch: args[0],discord: args[1]});
+            var tchan = settings.get(message.guild.id).twitch
+            var dchan = settings.get(message.guild.id).discord
             console.log('set: ' + tchan + ' ' + dchan)
             break;
         case "start" :
