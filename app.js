@@ -40,6 +40,7 @@ bot.on('ready', () => {
 bot.on('message', async (message) => {
     if (!message.guild || message.author.bot) return;
     if (message.content.indexOf(config.discord.prefix) !== 0) return;
+    if (message.author.id !== message.guild.ownerID) return;
     const args = message.content.slice(config.discord.prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
 
