@@ -23,10 +23,16 @@ bot.on('ready', () => {
     console.log('Battlecruiser Operational!');
     console.log('Prefix set to: ' + config.discord.prefix);
     bot.guilds.forEach(guild => {
-        var dchan = settings.get(guild.id).discord
-        var tchan = settings.get(guild.id).twitch
-        console.log('using: ' + tchan + ' ' + dchan)
-        ConnectionStart(tchan,dchan)
+        console.log("loading guild id: " + guild.id)
+        try{
+            var dchan = settings.get(guild.id).discord
+            var tchan = settings.get(guild.id).twitch
+            console.log('using: ' + tchan + ' ' + dchan)
+            ConnectionStart(tchan,dchan)
+        } catch (err) {
+            var dchan
+            var tchan
+        }
     });
   });
 bot.on('message', async (message) => {
@@ -34,15 +40,6 @@ bot.on('message', async (message) => {
     if (message.content.indexOf(config.discord.prefix) !== 0) return;
     const args = message.content.slice(config.discord.prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
-    try{
-        var dchan = settings.get(message.guild.id).discord
-        var tchan = settings.get(message.guild.id).twitch
-        console.log('using: ' + tchan + ' ' + dchan)
-    } catch(err) {
-        var dchan
-        var tchan
-        console.log('using: ' + tchan + ' ' + dchan)
-    }
 
     switch(command) {
         case "channels" :
@@ -53,15 +50,16 @@ bot.on('message', async (message) => {
             break;
         case "start" :
             ConnectionStart(tchan,dchan);
+            break;
         case "stop" :
-            client.disconnect();
+            break;
     }
 });
 bot.login(config.discord.token);
 
 function ConnectionStart(tchan,dchan) {
     console.log('connecting: ' + tchan + ' ' + dchan)
-    var client = new tmi.client({
+    client = new tmi.client({
         identity: {
             username: config.twitch.account,
             password: config.twitch.token
@@ -74,13 +72,13 @@ function ConnectionStart(tchan,dchan) {
             return;
         switch (userstate["message-type"]) {
             case "action":
-                var MessageToDiscord = "**<" + userstate.username + ">:** " + message;
-                console.log("Twitch - " + MessageToDiscord);
+                var MessageToDiscord = "**<" + userstate.username + ">** " + message;
+                console.log(tchan + " - " + MessageToDiscord);
                 bot.channels.get(dchan).send(MessageToDiscord);
                 break;
             case "chat":
                 var MessageToDiscord = "**<" + userstate.username + ">:** " + message;
-                console.log("Twitch - " + MessageToDiscord);
+                console.log(tchan + " - " + MessageToDiscord);
                 bot.channels.get(dchan).send(MessageToDiscord);
                 break;
             case "whisper":
@@ -90,5 +88,4 @@ function ConnectionStart(tchan,dchan) {
         }
     });
 }
-
 //# sourceMappingURL=app.js.map
