@@ -23,16 +23,18 @@ bot.on('ready', () => {
     console.log('Battlecruiser Operational!');
     console.log('Prefix set to: ' + config.discord.prefix);
     bot.guilds.forEach(guild => {
-        console.log("loading guild id: " + guild.id)
-        try{
-            var dchan = settings.get(guild.id).discord
-            var tchan = settings.get(guild.id).twitch
-            console.log('using: ' + tchan + ' ' + dchan)
-            ConnectionStart(tchan,dchan,guild.id)
-        } catch (err) {
-            var dchan
-            var tchan
-        }
+        console.log("loading guild id: " + guild.name);
+        guild.channels.forEach(channel =>{
+            try{
+                var dchan = settings.get(guild.id+'-'+channel.id).discord;
+                var tchan = settings.get(guild.id+'-'+channel.id).twitch;
+                ConnectionStart(tchan,dchan,guild.id+'-'+channel.id);
+                console.log('using: ' + tchan + ' on #' + channel.name);
+            } catch (err) {
+                var dchan
+                var tchan
+            }
+        })
     });
   });
 bot.on('message', async (message) => {
@@ -42,38 +44,39 @@ bot.on('message', async (message) => {
     const command = args.shift().toLowerCase();
 
     switch(command) {
-        case "channels" :
-            settings.set(message.guild.id,{twitch: args[0],discord: args[1], client: null});
-            var tchan = settings.get(message.guild.id).twitch
-            var dchan = settings.get(message.guild.id).discord
-            console.log('set: ' + tchan + ' ' + dchan)
+        case "channel" :
+            settings.set(message.guild.id+'-'+message.channel.id,{twitch: args[0],discord: message.channel.id, client: null});
+            var tchan = settings.get(message.guild.id+'-'+message.channel.id).twitch;
+            var dchan = settings.get(message.guild.id+'-'+message.channel.id).discord;
+            console.log('set: ' + tchan + ' ' + dchan);
             message.reply('#' + bot.channels.get(dchan).name + ' is now connected to twitch.tv/' + tchan + '.');
             break;
         case "clear" :
-            settings.delete(message.guild.id);
-            console.log('deleting settings for: ' + message.guild.id)
-            message.reply("settings cleared.")
+            settings.get(message.guild.id+'-'+message.channel.id).client.disconnect();
+            settings.delete(message.guild.id+'-'+message.channel.id);
+            console.log('deleting settings for: ' + message.guild.id+'-'+message.channel.id);
+            message.reply("settings cleared.");
         case "start" :
             try{
-                var tchan = settings.get(message.guild.id).twitch
-                var dchan = settings.get(message.guild.id).discord
+                var tchan = settings.get(message.guild.id+'-'+message.channel.id).twitch;
+                var dchan = settings.get(message.guild.id+'-'+message.channel.id).discord;
                 try{
-                    settings.get(message.guild.id).client.disconnect();
+                    settings.get(message.guild.id+'-'+message.channel.id).client.disconnect();
                 } catch (err) {
                     console.log('There is no currently running twitch client for ' + message.guild.id + '.')
                 }
-                ConnectionStart(tchan,dchan,message.guild.id);
-                console.log(message.guild.id + ' connected');
+                ConnectionStart(tchan,dchan,message.guild.id+'-'+message.channel.id);
+                console.log(message.guild.id+'-'+message.channel.id + ' connected');
                 message.reply("Twitch Chat for twitch.tv/" + tchan + ' is now connected')
                 break;
             } catch (err) {
             }
         case "stop" :
             try{
-                var tchan = settings.get(message.guild.id).twitch
-                var dchan = settings.get(message.guild.id).discord
-                settings.get(message.guild.id).client.disconnect();
-                console.log(message.guild.id + ' disconnected');
+                var tchan = settings.get(message.guild.id+'-'+message.channel.id).twitch
+                var dchan = settings.get(message.guild.id+'-'+message.channel.id).discord
+                settings.get(message.guild.id+'-'+message.channel.id).client.disconnect();
+                console.log(message.guild.id+'-'+message.channel.id + ' disconnected');
                 message.reply("Twitch Chat for twitch.tv/" + tchan + ' is now disconnected')
             } catch (err) {
             }
@@ -98,7 +101,7 @@ function ConnectionStart(tchan,dchan,gid) {
             return;
         switch (userstate["message-type"]) {
             case "action":
-                var MessageToDiscord = "**<" + userstate.username + ">** " + message;
+                var MessageToDiscord = "**" + userstate.username + "** " + message;
                 console.log(tchan + " - " + MessageToDiscord);
                 bot.channels.get(dchan).send(MessageToDiscord);
                 break;
