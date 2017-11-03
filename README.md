@@ -1,4 +1,5 @@
 # DiscordChatBot
+*note: you only need to follow dependencies and setup if you plan on self-hosting the bot, if you want to just use the bot without needing to self-host, feel free to simply invite and use the commands to setup the bot on your server.*
 
 **Dependencies:**
 * ```npm i discord.js enmap enmap-levels tmi.js```
