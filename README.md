@@ -15,3 +15,6 @@
 * !clear - will stop the bot and remove all settings for this channel
 * !start - will start the bot, use this after !channel to get the bot running
 * !stop - will stop the bot from forwarding but keep settings in tact
+
+**[Join My Discord!](https://discord.gg/tZNvEsZ)**
+
