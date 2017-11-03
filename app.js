@@ -53,6 +53,8 @@ bot.on('message', async (message) => {
             break;
         case "start" :
             ConnectionStart(tchan,dchan);
+        case "stop" :
+            client.disconnect();
     }
 });
 bot.login(config.discord.token);
